@@ -65,7 +65,7 @@ If you prefer a native installation, `install.sh` handles everything automatical
     ./reproduce.sh
     ```
 
-    This executes a lightweight 100-element fragmentation simulation (`test_quick`). If it completes without errors and creates files under `output/test_quick/`, the installation is functional.
+    Ensure it is executable via `chmod +x reproduce.sh`. This executes a lightweight 100-element fragmentation simulation (`test_reproduce`). If it completes without errors and creates files under `output/test_reproduce/`, the installation is functional.
 
 ---
 
