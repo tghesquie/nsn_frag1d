@@ -33,21 +33,23 @@ The build logic is centralized in **`setup.sh`**. It is used both by the Docker 
 
 #### Option A: Docker (Recommended)
 
-To ensure strict reproducibility and avoid complex C++ compilation, this project is containerized using Docker. The `Dockerfile` pins the exact Akantu commit (`22adc1e`) and uses `uv` to manage Python dependencies.
+To ensure strict reproducibility, the project is containerized using Docker. The Dockerfile delegates the entire build process to `setup.sh`, which installs system libraries, pins the exact Akantu commit (`22adc1e`), compiles the C++ engine, and creates the Python environment via `uv`.
 
 1. **Build the Docker Image:** From the root of this repository, run:
     ```bash
     docker build -t explicit-nsn:latest .
     ```
-    *(Note: This step takes a few minutes as it compiles the Akantu C++ engine from source. Ensure your `.dockerignore` file is present to prevent uploading large local output folders to the build context).*
+    *(Note: This step takes a few minutes as it compiles the Akantu C++ engine from source. Ensure your `.dockerignore` file is present to prevent uploading large local output folders to the build context).
 
 #### Option B: Local Manual Setup
 
-If you prefer a native installation, you must build Akantu from source and manage your own Python environment.
+If you prefer a native installation, `setup.sh` handles everything automatically on Debian/Ubuntu-based systems.
 
-1. **Prerequisites:** You need Python ≥ 3.11. Manually install the following system libraries: `build-essential`, `cmake`, `git`, `gfortran`, `gmsh`, `libboost-dev`, `libeigen3-dev`, `libmumps-seq-dev`, `libblas-dev`, `liblapack-dev`.
+1. **Prerequisites:** You need Python ≥ 3.11 and a Debian/Ubuntu-based system with `apt-get`.
 
-2. **Run the Setup Script:** Execute `./setup.sh` from the repository root (ensure it is executable via `chmod +x setup.sh`). It clones Akantu (commit `22adc1e`), compiles the C++ engine, creates a virtual environment, and installs the package in editable mode.
+2. **Run the Setup Script:** Execute `./setup.sh` from the repository root (ensure it is executable via `chmod +x setup.sh`). It automatically installs the required system libraries (`build-essential`, `cmake`, `git`, `gfortran`, `gmsh`, `libboost-dev`, `libeigen3-dev`, `libmumps-seq-dev`, `libblas-dev`, `liblapack-dev`), clones Akantu (commit `22adc1e`), compiles the C++ engine, creates a virtual environment, and installs the package in editable mode.
+
+   > **Note:** If you are not on a Debian-based system, `setup.sh` will print the required packages and skip the system installation so you can install their equivalents manually. You can also set the environment variable `SKIP_SYSTEM_DEPS=1` to skip the system package step entirely (e.g., in CI environments where dependencies are pre-installed).
 
 3. **Activate the Environment:** Every time you open a new terminal, load the paths:
 

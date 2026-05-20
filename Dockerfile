@@ -4,16 +4,9 @@ LABEL maintainer="thibault.ghesquiere-dierickx@epfl.ch" \
     paper="The semi-explicit Nonsmooth Newmark time integrator for robust unilateral contact in dynamic fragmentation simulations" \
     akantu_commit="22adc1e143ca74fdb70af185536d16ff4a3396de" \
     uv_version="0.4.30" \
-    build_date="2026-03-27"
+    build_date="2026-05-26"
 
 COPY --from=ghcr.io/astral-sh/uv:0.4.30 /uv /bin/uv
-
-# Install system dependencies
-RUN apt-get update && apt-get install -y --no-install-recommends \
-    build-essential cmake git gfortran gmsh \
-    libboost-dev libeigen3-dev libmumps-seq-dev \
-    libblas-dev liblapack-dev \
-    && rm -rf /var/lib/apt/lists/*
 
 WORKDIR /app
 COPY . .
@@ -22,8 +15,6 @@ RUN bash setup.sh
 ENV PYTHONPATH=/app/external/akantu/build/python
 ENV LD_LIBRARY_PATH=/app/external/akantu/build/python:/usr/lib/x86_64-linux-gnu
 
-ENTRYPOINT ["/bin/bash", "-c", \
-    "source /app/.venv/bin/activate && \
-    exec \"$@\"", "--"]
+ENTRYPOINT ["/bin/bash", "-c", "source /app/.venv/bin/activate && exec \"$@\"", "--"]
 
 CMD ["python", "src/run_fragmentation.py", "--help"]

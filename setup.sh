@@ -1,6 +1,8 @@
 #!/bin/bash
 # setup.sh — Shared installation script for NS_Frag1D
 # Works for both local and Docker installations.
+# On Debian/Ubuntu-based systems, automatically installs system dependencies.
+# On other systems, prints the required packages and continues.
 
 set -e
 
@@ -12,6 +14,54 @@ AKANTU_PATH="$PROJECT_ROOT/$AKANTU_DIR/akantu"
 
 echo "--- Starting Installation ---"
 
+# ----------------------------------------------------------------------------
+# 1. Install system dependencies (Debian/Ubuntu)
+# ----------------------------------------------------------------------------
+echo "--- Checking / Installing System Dependencies ---"
+
+# Allow power users / CI to skip the system step
+if [ "${SKIP_SYSTEM_DEPS}" = "1" ] || [ "${SKIP_SYSTEM_DEPS}" = "true" ]; then
+    echo "SKIP_SYSTEM_DEPS is set — skipping system package installation."
+else
+    if command -v apt-get &> /dev/null; then
+        APT_PACKAGES=(
+            build-essential
+            cmake
+            git
+            gfortran
+            gmsh
+            libboost-dev
+            libeigen3-dev
+            libmumps-seq-dev
+            libblas-dev
+            liblapack-dev
+        )
+
+        echo "Updating package index and installing dependencies..."
+        if [ "$(id -u)" -eq 0 ]; then
+            apt-get update
+            apt-get install -y --no-install-recommends "${APT_PACKAGES[@]}"
+            rm -rf /var/lib/apt/lists/*
+        elif command -v sudo &> /dev/null; then
+            sudo apt-get update
+            sudo apt-get install -y --no-install-recommends "${APT_PACKAGES[@]}"
+        else
+            echo "Error: apt-get is available, but neither root access nor sudo was found." >&2
+            echo "Please install the following packages manually:" >&2
+            printf '  - %s\n' "${APT_PACKAGES[@]}" >&2
+            exit 1
+        fi
+    else
+        echo "Warning: apt-get not found. You are likely not on a Debian/Ubuntu-based system." >&2
+        echo "Please install the equivalent of the following packages manually:" >&2
+        echo "  build-essential cmake git gfortran gmsh libboost-dev libeigen3-dev libmumps-seq-dev libblas-dev liblapack-dev" >&2
+        echo "Continuing with the remaining installation steps..."
+    fi
+fi
+
+# ----------------------------------------------------------------------------
+# 2. Clone & Build Akantu
+# ----------------------------------------------------------------------------
 mkdir -p "$AKANTU_DIR"
 cd "$AKANTU_DIR"
 
@@ -51,6 +101,9 @@ cmake .. \
 echo "Building Akantu (this may take a while)..."
 cmake --build . -j 4
 
+# ----------------------------------------------------------------------------
+# 3. Python virtual environment
+# ----------------------------------------------------------------------------
 cd "$PROJECT_ROOT"
 echo "Setting up Python virtual environment..."
 
@@ -65,6 +118,9 @@ else
     pip install -e .
 fi
 
+# ----------------------------------------------------------------------------
+# 4. Done
+# ----------------------------------------------------------------------------
 echo "--- Installation Complete ---"
 echo "To run simulations, you must set the following environment variables:"
 echo "export PYTHONPATH=$AKANTU_PATH/build/python"
