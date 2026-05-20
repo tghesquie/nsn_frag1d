@@ -1,5 +1,5 @@
 #!/bin/bash
-# setup.sh — Shared installation script for NS_Frag1D
+# install.sh — Shared installation script for NS_Frag1D
 # Works for both local and Docker installations.
 # On Debian/Ubuntu-based systems, automatically installs system dependencies.
 # On other systems, prints the required packages and continues.
@@ -24,18 +24,13 @@ if [ "${SKIP_SYSTEM_DEPS}" = "1" ] || [ "${SKIP_SYSTEM_DEPS}" = "true" ]; then
     echo "SKIP_SYSTEM_DEPS is set — skipping system package installation."
 else
     if command -v apt-get &> /dev/null; then
-        APT_PACKAGES=(
-            build-essential
-            cmake
-            git
-            gfortran
-            gmsh
-            libboost-dev
-            libeigen3-dev
-            libmumps-seq-dev
-            libblas-dev
-            liblapack-dev
-        )
+        PKG_FILE="$PROJECT_ROOT/pkg.txt"
+        if [ ! -f "$PKG_FILE" ]; then
+            echo "Error: Package list file '$PKG_FILE' not found." >&2
+            exit 1
+        fi
+
+        mapfile -t APT_PACKAGES < <(grep -v '^[[:space:]]*$' "$PKG_FILE")
 
         echo "Updating package index and installing dependencies..."
         if [ "$(id -u)" -eq 0 ]; then
@@ -122,7 +117,7 @@ fi
 # 4. Done
 # ----------------------------------------------------------------------------
 echo "--- Installation Complete ---"
-echo "To run simulations, you must set the following environment variables:"
-echo "export PYTHONPATH=$AKANTU_PATH/build/python"
-echo "export LD_LIBRARY_PATH=$AKANTU_PATH/build/python:/usr/lib/x86_64-linux-gnu"
-echo "source $PROJECT_ROOT/.venv/bin/activate"
+echo "To activate the environment for this terminal session, run:"
+echo "  source env.sh"
+echo ""
+echo "To verify the installation, run: ./reproduce.sh"

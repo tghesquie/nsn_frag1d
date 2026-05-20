@@ -1,0 +1,10 @@
+build-essential
+cmake
+git
+gfortran
+gmsh
+libboost-dev
+libeigen3-dev
+libmumps-seq-dev
+libblas-dev
+liblapack-dev

@@ -10,11 +10,8 @@ COPY --from=ghcr.io/astral-sh/uv:0.4.30 /uv /bin/uv
 
 WORKDIR /app
 COPY . .
-RUN bash setup.sh
+RUN bash install.sh
 
-ENV PYTHONPATH=/app/external/akantu/build/python
-ENV LD_LIBRARY_PATH=/app/external/akantu/build/python:/usr/lib/x86_64-linux-gnu
-
-ENTRYPOINT ["/bin/bash", "-c", "source /app/.venv/bin/activate && exec \"$@\"", "--"]
+ENTRYPOINT ["/bin/bash", "-c", "source /app/env.sh && exec \"$@\"", "--"]
 
 CMD ["python", "src/run_fragmentation.py", "--help"]

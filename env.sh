@@ -15,20 +15,13 @@ else
 fi
 
 # --- Akantu environment ---
-if [ -z "${AKANTU_ENV:-}" ]; then
-  cat >&2 <<'EOF'
-AKANTU_ENV is not set.
-Set it to your Akantu environment script, for example:
-  export AKANTU_ENV=/path/to/akantu/build/akantu_environment.sh
-Then re-run:
-  source env.sh
-EOF
-  return 1 2>/dev/null || exit 1
-fi
+# Allow override via AKANTU_ENV
+AKANTU_ENV="${AKANTU_ENV:-${SCRIPT_DIR}/external/akantu/build/akantu_environment.sh}"
 
 if [ ! -f "${AKANTU_ENV}" ]; then
-  echo "File not found: ${AKANTU_ENV}" >&2
-  echo "Please check that AKANTU_ENV points to a valid file." >&2
+  echo "Akantu environment script not found: ${AKANTU_ENV}" >&2
+  echo "Has Akantu been built? If you used a custom path, set it via:" >&2
+  echo "   export AKANTU_ENV=/path/to/akantu/build/akantu_environment.sh" >&2
   return 1 2>/dev/null || exit 1
 fi
 

@@ -29,11 +29,11 @@
 
 ## Environment Setup
 
-The build logic is centralized in **`setup.sh`**. It is used both by the Docker build and for local installations, ensuring the same Akantu commit and CMake flags are always applied.
+The build logic is centralized in **`install.sh`**. It is used both by the Docker build and for local installations, ensuring the same Akantu commit and CMake flags are always applied.
 
 #### Option A: Docker (Recommended)
 
-To ensure strict reproducibility, the project is containerized using Docker. The Dockerfile delegates the entire build process to `setup.sh`, which installs system libraries, pins the exact Akantu commit (`22adc1e`), compiles the C++ engine, and creates the Python environment via `uv`.
+To ensure strict reproducibility, the project is containerized using Docker. The Dockerfile delegates the entire build process to `install.sh`, which installs system libraries, pins the exact Akantu commit (`22adc1e`), compiles the C++ engine, and creates the Python environment via `uv`.
 
 1. **Build the Docker Image:** From the root of this repository, run:
     ```bash
@@ -43,21 +43,29 @@ To ensure strict reproducibility, the project is containerized using Docker. The
 
 #### Option B: Local Manual Setup
 
-If you prefer a native installation, `setup.sh` handles everything automatically on Debian/Ubuntu-based systems.
+If you prefer a native installation, `install.sh` handles everything automatically on Debian/Ubuntu-based systems.
 
 1. **Prerequisites:** You need Python ≥ 3.11 and a Debian/Ubuntu-based system with `apt-get`.
 
-2. **Run the Setup Script:** Execute `./setup.sh` from the repository root (ensure it is executable via `chmod +x setup.sh`). It automatically installs the required system libraries (`build-essential`, `cmake`, `git`, `gfortran`, `gmsh`, `libboost-dev`, `libeigen3-dev`, `libmumps-seq-dev`, `libblas-dev`, `liblapack-dev`), clones Akantu (commit `22adc1e`), compiles the C++ engine, creates a virtual environment, and installs the package in editable mode.
+2. **Run the Install Script:** Execute `./install.sh` from the repository root (ensure it is executable via `chmod +x install.sh`). It automatically installs the system libraries listed in `pkg.txt` (such as `build-essential`, `cmake`, `git`, `gfortran`, `gmsh`, `libboost-dev`, `libeigen3-dev`, `libmumps-seq-dev`, `libblas-dev`, `liblapack-dev`), clones Akantu (commit `22adc1e`), compiles the C++ engine, creates a virtual environment, and installs the package in editable mode.
 
-   > **Note:** If you are not on a Debian-based system, `setup.sh` will print the required packages and skip the system installation so you can install their equivalents manually. You can also set the environment variable `SKIP_SYSTEM_DEPS=1` to skip the system package step entirely (e.g., in CI environments where dependencies are pre-installed).
+   > **Note:** If you are not on a Debian-based system, `install.sh` will print the required packages and skip the system installation so you can install their equivalents manually. You can also set the environment variable `SKIP_SYSTEM_DEPS=1` to skip the system package step entirely (e.g., in CI environments where dependencies are pre-installed).
 
-3. **Activate the Environment:** Every time you open a new terminal, load the paths:
+3. **Activate the Environment:** Every time you open a new terminal, load the environment with a single command:
 
     ```bash
-    export PYTHONPATH=$(pwd)/external/akantu/build/python
-    export LD_LIBRARY_PATH=$(pwd)/external/akantu/build/python:/usr/lib/x86_64-linux-gnu
-    source .venv/bin/activate
+    source env.sh
     ```
+
+    This activates the Python virtual environment (`.venv`) and sources the Akantu build environment automatically.
+
+4. **Verify the Installation:** To check that everything is working, run the quick sanity-check script:
+
+    ```bash
+    ./reproduce.sh
+    ```
+
+    This executes a lightweight 100-element fragmentation simulation (`test_quick`). If it completes without errors and creates files under `output/test_quick/`, the installation is functional.
 
 ---
 
