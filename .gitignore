@@ -1,0 +1,78 @@
+# Compiled object files
+*.o
+*.obj
+
+# Fortran module files
+*.mod
+
+# Executables and links
+*.exe
+*.out
+*.app
+*.bin
+
+# Static & shared libraries
+*.a
+*.so
+*.dylib
+*.dll
+
+# Core dumps and crash logs
+core
+core.*
+
+# Build directories
+/build/
+/bin/
+/lib/
+/dist/
+/obj/
+
+# CMake
+CMakeCache.txt
+CMakeFiles/
+CMakeScripts/
+cmake_install.cmake
+Makefile
+install_manifest.txt
+
+# Ninja
+.ninja_deps
+.ninja_log
+
+# IDE/editor directories and files
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+
+# Logs, profiles, temporary
+*.log
+*.tmp
+*.bak
+
+# Python (if any scripts)
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+*.egg-info/
+.venv/
+
+# Others
+*.msh
+*.csv
+*.geo
+*.pvtu
+*.vtu
+*.pvd
+*.png
+output/
+old/
+BD-nsn_frag1d-runs/
+.bd/
+logs/
+.ruff_cache/
+opencode.json

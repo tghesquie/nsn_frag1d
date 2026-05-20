@@ -1,0 +1,7 @@
+# .dockerignore
+output/
+.venv/
+.git/
+__pycache__/
+*.log
+external/

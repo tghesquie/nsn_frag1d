@@ -1,0 +1,62 @@
+[project]
+name = "ns-frag1d"
+version = "0.1.0"
+description = "1D Cohesive Fracture and Contact (Akantu)"
+authors = [
+	{ name = "Thibault Ghequière-Diérickx", email = "thibault.ghesquiere-dierickx@epfl.ch" },
+]
+license = {text = "GPL-3.0"}
+readme = "README.md"
+requires-python = ">=3.11"
+
+dependencies = [
+    "ipykernel",
+    "jupyterlab",
+    "numpy",
+    "plotly",
+    "scipy",
+    "nbformat",
+    "pandas",
+    "h5py",
+    "kaleido",
+    "meshio",
+    "osqp",
+    "sympy",
+]
+
+[project.optional-dependencies]
+dev = [
+  "ruff>=0.4.0",
+]
+
+[build-system]
+requires = ["setuptools>=61"]
+build-backend = "setuptools.build_meta"
+
+[tool.ruff]
+line-length = 88
+target-version = "py311"
+select = ["E", "W", "F", "N", "ANN"] # PEP8, pyflakes, pep8-naming, annotations
+ignore = [
+"ANN101", 
+"ANN102",
+"ANN401",
+"E501",
+"N813"
+]
+
+[tool.ruff.lint.pep8-naming]
+classmethod-decorators = ["classmethod"]
+
+[tool.ruff.lint.flake8-annotations]
+ignore-fully-untyped = false
+allow-star-arg-any = true
+
+[tool.ruff.lint.per-file-ignores]
+"**/solver.py" = ["N806", "N803"]
+"**/helper.py" = ["N806", "N803"]
+"**/main.py" = ["N806", "N803"]
+
+[tool.codespell]
+skip = 'uv.lock'
+

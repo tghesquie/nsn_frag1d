@@ -1,0 +1,20 @@
+seed = 1
+
+material elastic [
+    name = linear
+    rho = 3900 # Density (kg/m3)
+    E = 370e9 # Young's module (Pa)
+    nu = 0. 
+    finite_deformation = false
+]
+
+material cohesive_linear [
+    name = cohesive
+	beta = 1.0
+	G_c = 50.0
+    kappa = 1.0
+    sigma_c = 2.62e8 uniform [-2.62e6, 2.62e6]
+    contact_after_breaking = true
+    penalty = 1.86e18
+    adaptive_penalty = false
+]
