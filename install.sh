@@ -6,6 +6,13 @@
 
 set -e
 
+# --- 1. Git Repositories and Pinned Commits ---
+# Your project repository (where the src/ folder lives)
+MY_GIT_URL="https://github.com/tghesquie/nsn_frag1d"
+MY_PROJECT_COMMIT="74b022f" 
+
+# The external C++ library dependency (Akantu)
+AKANTU_GIT_URL="https://gitlab.com/akantu/akantu.git"
 AKANTU_COMMIT="${AKANTU_COMMIT:-22adc1e143ca74fdb70af185536d16ff4a3396de}"
 AKANTU_DIR="${AKANTU_DIR:-external}"
 
@@ -15,11 +22,30 @@ AKANTU_PATH="$PROJECT_ROOT/$AKANTU_DIR/akantu"
 echo "--- Starting Installation ---"
 
 # ----------------------------------------------------------------------------
-# 1. Install system dependencies (Debian/Ubuntu)
+# 2. Fetch YOUR project source code if missing (DCSM Mode)
+# ----------------------------------------------------------------------------
+if [ ! -d "$PROJECT_ROOT/src" ]; then
+    echo "--- Source code missing. Fetching snapshot from nsn_frag1d Git repository ---"
+    
+    # Clone to a temporary directory so we don't conflict with existing DCSM files
+    git clone "$MY_GIT_URL" repo_tmp
+    cd repo_tmp
+    git checkout "$MY_PROJECT_COMMIT"
+    cd ..
+
+    # Move the actual source code directory to the project root
+    mv repo_tmp/src "$PROJECT_ROOT/src"
+    
+    # Clean up temporary folder
+    rm -rf repo_tmp
+    echo "--- Source code successfully placed in root ---"
+fi
+
+# ----------------------------------------------------------------------------
+# 3. Install system dependencies (Debian/Ubuntu)
 # ----------------------------------------------------------------------------
 echo "--- Checking / Installing System Dependencies ---"
 
-# Allow power users / CI to skip the system step
 if [ "${SKIP_SYSTEM_DEPS}" = "1" ] || [ "${SKIP_SYSTEM_DEPS}" = "true" ]; then
     echo "SKIP_SYSTEM_DEPS is set — skipping system package installation."
 else
@@ -55,18 +81,18 @@ else
 fi
 
 # ----------------------------------------------------------------------------
-# 2. Clone & Build Akantu
+# 4. Clone & Build External Dependency (Akantu)
 # ----------------------------------------------------------------------------
 mkdir -p "$AKANTU_DIR"
 cd "$AKANTU_DIR"
 
 if [ ! -d "akantu" ]; then
-    echo "Cloning Akantu..."
-    git clone https://gitlab.com/akantu/akantu.git
+    echo "Cloning Akantu dependency..."
+    git clone "$AKANTU_GIT_URL"
 fi
 
 cd akantu
-echo "Checking out pinned commit: $AKANTU_COMMIT"
+echo "Checking out pinned Akantu commit: $AKANTU_COMMIT"
 git checkout "$AKANTU_COMMIT"
 
 mkdir -p build && cd build
@@ -97,7 +123,7 @@ echo "Building Akantu (this may take a while)..."
 cmake --build . -j 4
 
 # ----------------------------------------------------------------------------
-# 3. Python virtual environment
+# 5. Python virtual environment
 # ----------------------------------------------------------------------------
 cd "$PROJECT_ROOT"
 echo "Setting up Python virtual environment..."
@@ -113,9 +139,6 @@ else
     pip install -e .
 fi
 
-# ----------------------------------------------------------------------------
-# 4. Done
-# ----------------------------------------------------------------------------
 echo "--- Installation Complete ---"
 echo "To activate the environment for this terminal session, run:"
 echo "  source env.sh"
