@@ -8,14 +8,17 @@ source "$PROJECT_ROOT/env.sh"
 
 echo "--- Running Quick Sanity-Check Simulation ---"
 python "$PROJECT_ROOT/src/run_fragmentation.py" \
-    --id test_quick \
-    --contact-type penalty \
+    --id test_reproduce \
+    --contact-type nonsmooth \
+    --restitution 0.9 \
+    --cohesive-factor 1 \
     --length 1e-3 \
     --n-elements 100 \
-    --total-time 1e-7 \
-    --safety-factor 0.2 \
-    --n-dumps 10
+    --safety-factor 0.99 \
+    --apply-bc
 
 echo "--- Test Run Complete ---"
 echo "To inspect results:"
-echo "  paraview $PROJECT_ROOT/output/test_quick/paraview/"
+echo "  paraview $PROJECT_ROOT/output/test_reproduce/paraview/tension.pvd"
+
+

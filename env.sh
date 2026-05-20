@@ -16,12 +16,12 @@ fi
 
 # --- Akantu environment ---
 # Allow override via AKANTU_ENV
-AKANTU_ENV="${AKANTU_ENV:-${SCRIPT_DIR}/external/akantu/build/akantu_environment.sh}"
+AKANTU_ENV="${AKANTU_ENV:-${SCRIPT_DIR}/external/akantu/build/akantu_environement.sh}"
 
 if [ ! -f "${AKANTU_ENV}" ]; then
   echo "Akantu environment script not found: ${AKANTU_ENV}" >&2
   echo "Has Akantu been built? If you used a custom path, set it via:" >&2
-  echo "   export AKANTU_ENV=/path/to/akantu/build/akantu_environment.sh" >&2
+  echo "   export AKANTU_ENV=/path/to/akantu/build/akantu_environement.sh" >&2
   return 1 2>/dev/null || exit 1
 fi
 
