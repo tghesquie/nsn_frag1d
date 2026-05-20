@@ -304,8 +304,6 @@ Then open the printed URL in your browser.
 | Notebook | Purpose |
 | :--- | :--- |
 | `src/notebooks/visualize.ipynb` | Inspect a single simulation: energy balance, fragment count, stress/space-time diagrams |
-| `src/notebooks/visualize_batch.ipynb` | Aggregate results from multiple runs (convergence studies, parameter sweeps) |
-| `src/notebooks/visualize_paper.ipynb` | Reproduce the figures shown in the manuscript |
 
 ---
 
