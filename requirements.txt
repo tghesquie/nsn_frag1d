@@ -1,0 +1,12 @@
+ipykernel
+jupyterlab
+numpy
+plotly
+scipy
+nbformat
+pandas
+h5py
+kaleido
+meshio
+osqp
+sympy

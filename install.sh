@@ -24,8 +24,8 @@ echo "--- Starting Installation ---"
 # ----------------------------------------------------------------------------
 # 2. Fetch YOUR project source code if missing (DCSM Mode)
 # ----------------------------------------------------------------------------
-if [ ! -d "$PROJECT_ROOT/src" ]; then
-    echo "--- Source code missing. Fetching snapshot from nsn_frag1d Git repository ---"
+if [ ! -d "$PROJECT_ROOT/src" ] || [ ! -d "$PROJECT_ROOT/input" ]; then
+    echo "--- Project files missing. Fetching snapshot from nsn_frag1d Git repository ---"
     
     # Clone to a temporary directory so we don't conflict with existing DCSM files
     git clone "$MY_GIT_URL" repo_tmp
@@ -33,12 +33,18 @@ if [ ! -d "$PROJECT_ROOT/src" ]; then
     git checkout "$MY_PROJECT_COMMIT"
     cd ..
 
-    # Move the actual source code directory to the project root
-    mv repo_tmp/src "$PROJECT_ROOT/src"
+    # Move the source code and input directories to the project root if they aren't there
+    [ -d repo_tmp/src ] && [ ! -d "$PROJECT_ROOT/src" ] && mv repo_tmp/src "$PROJECT_ROOT/"
+    [ -d repo_tmp/input ] && [ ! -d "$PROJECT_ROOT/input" ] && mv repo_tmp/input "$PROJECT_ROOT/"
+    
+    # Safely pull critical configurations to the root if they are not already there
+    [ -f repo_tmp/pyproject.toml ] && [ ! -f "$PROJECT_ROOT/pyproject.toml" ] && mv repo_tmp/pyproject.toml "$PROJECT_ROOT/"
+    [ -f repo_tmp/uv.lock ] && [ ! -f "$PROJECT_ROOT/uv.lock" ] && mv repo_tmp/uv.lock "$PROJECT_ROOT/"
+    [ -f repo_tmp/pkg.txt ] && [ ! -f "$PROJECT_ROOT/pkg.txt" ] && mv repo_tmp/pkg.txt "$PROJECT_ROOT/"
     
     # Clean up temporary folder
     rm -rf repo_tmp
-    echo "--- Source code successfully placed in root ---"
+    echo "--- Project files successfully placed in root ---"
 fi
 
 # ----------------------------------------------------------------------------
@@ -83,44 +89,48 @@ fi
 # ----------------------------------------------------------------------------
 # 4. Clone & Build External Dependency (Akantu)
 # ----------------------------------------------------------------------------
-mkdir -p "$AKANTU_DIR"
-cd "$AKANTU_DIR"
+if [ "${SKIP_AKANTU}" = "1" ] || [ "${SKIP_AKANTU}" = "true" ]; then
+    echo "SKIP_AKANTU is set — skipping Akantu compilation backend."
+else
+    mkdir -p "$AKANTU_DIR"
+    cd "$AKANTU_DIR"
 
-if [ ! -d "akantu" ]; then
-    echo "Cloning Akantu dependency..."
-    git clone "$AKANTU_GIT_URL"
+    if [ ! -d "akantu" ]; then
+        echo "Cloning Akantu dependency..."
+        git clone "$AKANTU_GIT_URL"
+    fi
+
+    cd akantu
+    echo "Checking out pinned Akantu commit: $AKANTU_COMMIT"
+    git checkout "$AKANTU_COMMIT"
+
+    mkdir -p build && cd build
+    echo "Configuring Akantu with CMake..."
+
+    cmake .. \
+        -DCMAKE_BUILD_TYPE=RelWithDebInfo \
+        -DAKANTU_COHESIVE_ELEMENT=ON \
+        -DAKANTU_CONTACT_MECHANICS=ON \
+        -DAKANTU_DAMAGE_NON_LOCAL=OFF \
+        -DAKANTU_DEBUG_TOOLS=OFF \
+        -DAKANTU_DIFFUSION=OFF \
+        -DAKANTU_DOCUMENTATION=OFF \
+        -DAKANTU_DUMPERS=ON \
+        -DAKANTU_EMBEDDED=OFF \
+        -DAKANTU_EXAMPLES=OFF \
+        -DAKANTU_IMPLICIT=ON \
+        -DAKANTU_IMPLICIT_SOLVER="Mumps" \
+        -DAKANTU_PARALLEL=OFF \
+        -DAKANTU_PHASE_FIELD=OFF \
+        -DAKANTU_PYTHON_INTERFACE=ON \
+        -DAKANTU_SOLID_MECHANICS=ON \
+        -DAKANTU_STRUCTURAL_MECHANICS=OFF \
+        -DAKANTU_TESTS=OFF \
+        -DAKANTU_TRACTION_AT_SPLIT_NODE_=OFF
+
+    echo "Building Akantu (this may take a while)..."
+    cmake --build . -j 4
 fi
-
-cd akantu
-echo "Checking out pinned Akantu commit: $AKANTU_COMMIT"
-git checkout "$AKANTU_COMMIT"
-
-mkdir -p build && cd build
-echo "Configuring Akantu with CMake..."
-
-cmake .. \
-    -DCMAKE_BUILD_TYPE=RelWithDebInfo \
-    -DAKANTU_COHESIVE_ELEMENT=ON \
-    -DAKANTU_CONTACT_MECHANICS=ON \
-    -DAKANTU_DAMAGE_NON_LOCAL=OFF \
-    -DAKANTU_DEBUG_TOOLS=OFF \
-    -DAKANTU_DIFFUSION=OFF \
-    -DAKANTU_DOCUMENTATION=OFF \
-    -DAKANTU_DUMPERS=ON \
-    -DAKANTU_EMBEDDED=OFF \
-    -DAKANTU_EXAMPLES=OFF \
-    -DAKANTU_IMPLICIT=ON \
-    -DAKANTU_IMPLICIT_SOLVER="Mumps" \
-    -DAKANTU_PARALLEL=OFF \
-    -DAKANTU_PHASE_FIELD=OFF \
-    -DAKANTU_PYTHON_INTERFACE=ON \
-    -DAKANTU_SOLID_MECHANICS=ON \
-    -DAKANTU_STRUCTURAL_MECHANICS=OFF \
-    -DAKANTU_TESTS=OFF \
-    -DAKANTU_TRACTION_AT_SPLIT_NODE_=OFF
-
-echo "Building Akantu (this may take a while)..."
-cmake --build . -j 4
 
 # ----------------------------------------------------------------------------
 # 5. Python virtual environment
@@ -128,19 +138,45 @@ cmake --build . -j 4
 cd "$PROJECT_ROOT"
 echo "Setting up Python virtual environment..."
 
+if ! command -v python3 &> /dev/null; then
+    echo "Error: python3 command was not found on this system." >&2
+    exit 1
+fi
+
+# Explicitly add the local bin path to the current script PATH just in case
+export PATH="$HOME/.local/bin:$PATH"
+
+# Handle virtual environment build using system uv, sandboxed uv, or fallback pip
 if command -v uv &> /dev/null; then
-    uv venv --python 3.11
+    echo "Using global 'uv' to create virtual environment..."
+    uv venv --python python3
     source .venv/bin/activate
     uv pip install -e .
 else
-    echo "uv not found, falling back to standard venv..."
-    python3.11 -m venv .venv
-    source .venv/bin/activate
-    pip install -e .
+    echo "'uv' not found globally. Attempting to fetch a sandboxed instance..."
+    if curl -LsSf https://astral.sh/uv/install.sh | sh &> /dev/null; then
+        # Manually force the PATH to recognize the freshly downloaded uv binary
+        export PATH="$HOME/.local/bin:$PATH"
+        echo "Sandboxed 'uv' loaded successfully."
+        uv venv --python python3
+        source .venv/bin/activate
+        uv pip install -e .
+    else
+        echo "Could not fetch sandboxed 'uv'. Falling back to standard Python venv tool..."
+        python3 -m venv .venv
+        source .venv/bin/activate
+        pip install --upgrade pip
+        pip install -e .
+    fi
 fi
 
 echo "--- Installation Complete ---"
 echo "To activate the environment for this terminal session, run:"
 echo "  source env.sh"
 echo ""
-echo "To verify the installation, run: ./reproduce.sh"
+if [ "${SKIP_AKANTU}" != "true" ] && [ "${SKIP_AKANTU}" != "1" ]; then
+    echo "To verify the installation, run: ./reproduce.sh"
+else
+    echo "Akantu was skipped. You can now launch your notebooks using:"
+    echo "  jupyter lab"
+fi

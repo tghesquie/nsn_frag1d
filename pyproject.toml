@@ -7,7 +7,7 @@ authors = [
 ]
 license = {text = "GPL-3.0"}
 readme = "README.md"
-requires-python = ">=3.11"
+requires-python = ">=3.10"
 
 dependencies = [
     "ipykernel",
@@ -35,7 +35,7 @@ build-backend = "setuptools.build_meta"
 
 [tool.ruff]
 line-length = 88
-target-version = "py311"
+target-version = "py310"
 select = ["E", "W", "F", "N", "ANN"] # PEP8, pyflakes, pep8-naming, annotations
 ignore = [
 "ANN101", 
