@@ -3,13 +3,16 @@
 # Works for both local and Docker installations.
 # On Debian/Ubuntu-based systems, automatically installs system dependencies.
 # On other systems, prints the required packages and continues.
+#
+# The source code and input files are expected to be present alongside this
+# script (this is the canonical software repository).
 
 set -e
 
 # --- 1. Git Repositories and Pinned Commits ---
-# Your project repository (where the src/ folder lives)
+# Fallback upstream repository (used only if src/ or input/ are missing)
 MY_GIT_URL="https://github.com/tghesquie/nsn_frag1d"
-MY_PROJECT_COMMIT="74b022f" 
+MY_PROJECT_COMMIT="74b022f"
 
 # The external C++ library dependency (Akantu)
 AKANTU_GIT_URL="https://gitlab.com/akantu/akantu.git"
@@ -22,12 +25,12 @@ AKANTU_PATH="$PROJECT_ROOT/$AKANTU_DIR/akantu"
 echo "--- Starting Installation ---"
 
 # ----------------------------------------------------------------------------
-# 2. Fetch YOUR project source code if missing (DCSM Mode)
+# 2. Fetch source code if missing
 # ----------------------------------------------------------------------------
 if [ ! -d "$PROJECT_ROOT/src" ] || [ ! -d "$PROJECT_ROOT/input" ]; then
     echo "--- Project files missing. Fetching snapshot from nsn_frag1d Git repository ---"
-    
-    # Clone to a temporary directory so we don't conflict with existing DCSM files
+
+    # Clone to a temporary directory so we don't conflict with existing files
     git clone "$MY_GIT_URL" repo_tmp
     cd repo_tmp
     git checkout "$MY_PROJECT_COMMIT"
@@ -36,15 +39,15 @@ if [ ! -d "$PROJECT_ROOT/src" ] || [ ! -d "$PROJECT_ROOT/input" ]; then
     # Move the source code and input directories to the project root if they aren't there
     [ -d repo_tmp/src ] && [ ! -d "$PROJECT_ROOT/src" ] && mv repo_tmp/src "$PROJECT_ROOT/"
     [ -d repo_tmp/input ] && [ ! -d "$PROJECT_ROOT/input" ] && mv repo_tmp/input "$PROJECT_ROOT/"
-    
+
     # Safely pull critical configurations to the root if they are not already there
     [ -f repo_tmp/pyproject.toml ] && [ ! -f "$PROJECT_ROOT/pyproject.toml" ] && mv repo_tmp/pyproject.toml "$PROJECT_ROOT/"
     [ -f repo_tmp/uv.lock ] && [ ! -f "$PROJECT_ROOT/uv.lock" ] && mv repo_tmp/uv.lock "$PROJECT_ROOT/"
     [ -f repo_tmp/pkg.txt ] && [ ! -f "$PROJECT_ROOT/pkg.txt" ] && mv repo_tmp/pkg.txt "$PROJECT_ROOT/"
-    
+
     # Clean up temporary folder
     rm -rf repo_tmp
-    echo "--- Project files successfully placed in root ---" 
+    echo "--- Project files successfully placed in root ---"
 fi
 
 # ----------------------------------------------------------------------------
@@ -149,7 +152,9 @@ export PATH="$HOME/.local/bin:$PATH"
 # Handle virtual environment build using system uv, sandboxed uv, or fallback pip
 if command -v uv &> /dev/null; then
     echo "Using global 'uv' to create virtual environment..."
-    uv venv --python python3
+    if [ ! -d ".venv" ]; then
+        uv venv --python python3.11
+    fi
     source .venv/bin/activate
     uv pip install -e .
 else
@@ -158,12 +163,16 @@ else
         # Manually force the PATH to recognize the freshly downloaded uv binary
         export PATH="$HOME/.local/bin:$PATH"
         echo "Sandboxed 'uv' loaded successfully."
-        uv venv --python python3
+        if [ ! -d ".venv" ]; then
+            uv venv --python python3.11
+        fi
         source .venv/bin/activate
         uv pip install -e .
     else
         echo "Could not fetch sandboxed 'uv'. Falling back to standard Python venv tool..."
-        python3 -m venv .venv
+        if [ ! -d ".venv" ]; then
+            python3 -m venv .venv
+        fi
         source .venv/bin/activate
         pip install --upgrade pip
         pip install -e .
@@ -177,6 +186,6 @@ echo ""
 if [ "${SKIP_AKANTU}" != "true" ] && [ "${SKIP_AKANTU}" != "1" ]; then
     echo "To verify the installation, run: ./reproduce.sh"
 else
-    echo "Akantu was skipped. You can now launch your notebooks using:"
-    echo "  jupyter lab"
+    echo "Akantu was skipped. You can now launch the notebooks using:"
+    echo "  jupyter lab notebooks/"
 fi

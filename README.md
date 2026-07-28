@@ -292,7 +292,7 @@ docker run --rm -p 8888:8888 \
 Then open **http://localhost:8888** in your browser and navigate to `src/notebooks/`.
 
 *Notes:*
-- `--NotebookApp.token=''` disables the password token for convenience (remove in production).
+- **Security warning:** `--NotebookApp.token=''` disables Jupyter's authentication token for convenience. Only use this on a trusted, single-user machine or inside an isolated container. Remove this flag for any shared or public deployment.
 - The third `-v` mount is optional; it lets you edit notebooks on the host and see changes immediately inside the container.
 
 ---

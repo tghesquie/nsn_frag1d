@@ -14,21 +14,27 @@ else
   return 1 2>/dev/null || exit 1
 fi
 
-# --- Akantu environment ---
+# --- Akantu environment (optional for notebook-only usage) ---
 # Allow override via AKANTU_ENV
 AKANTU_ENV="${AKANTU_ENV:-${SCRIPT_DIR}/external/akantu/build/akantu_environement.sh}"
 
-if [ ! -f "${AKANTU_ENV}" ]; then
-  echo "Akantu environment script not found: ${AKANTU_ENV}" >&2
-  echo "Has Akantu been built? If you used a custom path, set it via:" >&2
-  echo "   export AKANTU_ENV=/path/to/akantu/build/akantu_environement.sh" >&2
-  return 1 2>/dev/null || exit 1
+if [ "${SKIP_AKANTU}" = "1" ] || [ "${SKIP_AKANTU}" = "true" ]; then
+  echo "SKIP_AKANTU is set — skipping Akantu environment."
+  echo "Environment loaded (venv only)."
+else
+  if [ ! -f "${AKANTU_ENV}" ]; then
+    echo "Akantu environment script not found: ${AKANTU_ENV}" >&2
+    echo "Has Akantu been built? If you used a custom path, set it via:" >&2
+    echo "   export AKANTU_ENV=/path/to/akantu/build/akantu_environement.sh" >&2
+    echo "Or set SKIP_AKANTU=1 to use only the Python virtual environment." >&2
+    return 1 2>/dev/null || exit 1
+  fi
+
+  # shellcheck disable=SC1090
+  . "${AKANTU_ENV}" || {
+    echo "Failed to source Akantu environment: ${AKANTU_ENV}" >&2
+    return 1 2>/dev/null || exit 1
+  }
+
+  echo "Environment loaded (venv + Akantu)."
 fi
-
-# shellcheck disable=SC1090
-. "${AKANTU_ENV}" || {
-  echo "Failed to source Akantu environment: ${AKANTU_ENV}" >&2
-  return 1 2>/dev/null || exit 1
-}
-
-echo "Environment loaded (venv + Akantu)."

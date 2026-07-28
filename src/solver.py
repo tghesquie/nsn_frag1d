@@ -1,3 +1,6 @@
+# Copyright (c) 2026 EPFL
+# SPDX-License-Identifier: GPL-3.0-or-later
+
 from __future__ import annotations
 import akantu as aka
 import numpy as np

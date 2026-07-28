@@ -1,3 +1,6 @@
+# Copyright (c) 2026 EPFL
+# SPDX-License-Identifier: GPL-3.0-or-later
+
 import argparse
 from pathlib import Path
 import subprocess

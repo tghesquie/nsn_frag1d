@@ -1,3 +1,6 @@
+# Copyright (c) 2026 EPFL
+# SPDX-License-Identifier: GPL-3.0-or-later
+
 """Minimal query layer for nsn-frag1d simulation outputs.
 
 Examples
@@ -248,18 +251,19 @@ def scan(study: str | Path, pattern: str = "data.h5") -> pd.DataFrame:
         run_dir = _run_dir_from_data_path(data_path)
         run_id = run_dir.name
 
-        try:
-            params = parse_run_id(run_id)
-        except ValueError:
-            continue
-
-        record = {
+        record: dict[str, Any] = {
             "study_name": root.name,
             "run_id": run_id,
             "run_dir": str(run_dir),
             "data_path": str(data_path),
-            **params,
         }
+
+        try:
+            params = parse_run_id(run_id)
+            record.update(params)
+        except ValueError:
+            # Include custom IDs (e.g. README test runs) without parsed params.
+            pass
 
         defaults = _STUDY_DEFAULTS.get(root.name, {})
         for key, value in defaults.items():
@@ -366,15 +370,21 @@ def _query_path(path: str | Path, load_data: bool = True) -> pd.DataFrame:
     data_path = _locate_h5(Path(path))
     run_dir = _run_dir_from_data_path(data_path)
     run_id = run_dir.name
-    params = parse_run_id(run_id)
 
-    record = {
+    record: dict[str, Any] = {
         "study_name": run_dir.parent.name,
         "run_id": run_id,
         "run_dir": str(run_dir),
         "data_path": str(data_path),
-        **params,
     }
+
+    try:
+        params = parse_run_id(run_id)
+        record.update(params)
+    except ValueError:
+        # Custom IDs (e.g. README test runs like "test_reproduce") do not follow
+        # the nsnfrag1d_ convention; still allow loading their data.
+        pass
 
     df = pd.DataFrame([record])
     if load_data:

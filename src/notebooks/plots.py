@@ -1,3 +1,6 @@
+# Copyright (c) 2026 EPFL
+# SPDX-License-Identifier: GPL-3.0-or-later
+
 """Plotting helpers for nsn-frag1d simulation outputs.
 
 This module is meant to be used together with ``query_db``::
