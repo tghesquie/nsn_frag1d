@@ -459,6 +459,10 @@ def _generate_run_id(args: argparse.Namespace) -> argparse.Namespace:
     if args.impact_velocity is not None:
         id_parts.append(f"iv{args.impact_velocity:.2e}")
 
+    # Add cohesive insertion ratio if it differs from the default
+    if args.cohesive_insertion_ratio != 0.2:
+        id_parts.append(f"cir{args.cohesive_insertion_ratio}")
+
     # Add boundary condition flags
     if args.apply_bc:
         id_parts.append("bc")

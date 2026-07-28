@@ -400,5 +400,4 @@ def run(args: argparse.Namespace) -> None:
 if __name__ == "__main__":
 
     args = parse_simulation_args()
-    args.id += f"_cir{args.cohesive_insertion_ratio}"
     run(args)

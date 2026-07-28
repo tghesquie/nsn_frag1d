@@ -621,9 +621,9 @@ def plot_joint_mass_velocity(
 
     fig.update_layout(get_layout())
 
-    axis_style = axis_style()
-    fig.update_xaxes(axis_style)
-    fig.update_yaxes(axis_style)
+    style = axis_style()
+    fig.update_xaxes(style)
+    fig.update_yaxes(style)
     fig.update_xaxes(title_text="Mass (kg)", row=2, col=1)
     fig.update_yaxes(title_text="Velocity (m/s)", row=2, col=1)
     fig.update_xaxes(title_text="", row=1, col=1)
