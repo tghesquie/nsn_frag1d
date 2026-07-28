@@ -129,7 +129,9 @@ def run(args: argparse.Namespace) -> None:
     os.makedirs(pv_dir, exist_ok=True)
     init_paraview_dumpers(model, pv_dir)
 
-    h5_path = os.path.join(output_dir, "data.h5")
+    h5_dir = os.path.join(output_dir, "data")
+    os.makedirs(h5_dir, exist_ok=True)
+    h5_path = os.path.join(h5_dir, "data.h5")
     with h5py.File(h5_path, "w", libver="latest"):
         pass
 

@@ -76,6 +76,14 @@ def _create_argument_parser() -> argparse.ArgumentParser:
         help="Custom run identifier (overrides auto-generated ID)",
     )
     output_group.add_argument(
+        "--study-name",
+        "-sn",
+        type=str,
+        default=None,
+        metavar="NAME",
+        help="Optional study name; if given, outputs are placed under output-root/study-name/run-id/",
+    )
+    output_group.add_argument(
         "--n-dumps",
         "-d",
         type=int,
@@ -282,9 +290,19 @@ def _resolve_paths(args: argparse.Namespace) -> argparse.Namespace:
 
     # Resolve output directory
     if args.output_root:
-        args.output_root = Path(args.output_root).resolve()
+        # Keep the literal "." so that scripts can write directly into the
+        # current directory when the launcher is executed from inside a run.
+        if str(args.output_root) != ".":
+            args.output_root = Path(args.output_root).resolve()
+        else:
+            args.output_root = Path(args.output_root)
     else:
         args.output_root = project_root / "output"
+
+    # Optional study sub-folder (does not affect the run ID)
+    if args.study_name:
+        args.output_root = args.output_root / args.study_name
+
     args.output_root.mkdir(parents=True, exist_ok=True)
 
     # Select material file based on contact type
