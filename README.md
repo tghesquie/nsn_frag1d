@@ -189,7 +189,7 @@ For reproducibility, random variations of cohesive strength and defects location
 - **ParaView**: `output/<RUN_ID>/paraview/`
   - `tension_*` — bulk fields
   - `cohesive_*` — cohesive fields
-- **HDF5**: `output/<RUN_ID>/data.h5` with per-step data.
+- **HDF5**: `output/<RUN_ID>/data/data.h5` with per-step data.
 
 #### Run ID Format
 
@@ -213,6 +213,7 @@ All arguments below are defined in `parse_simulation_args()`.
 | :--- | :--- | :--- |
 | `--output-root`, `-o` | Base output directory | `output/` |
 | `--id`, `-id` | Custom run identifier (overrides auto-generated ID) | `None` |
+| `--study-name`, `-sn` | Optional study sub-folder inside output-root | `None` |
 | `--n-dumps`, `-d` | Number of output dumps during simulation | `200` |
 
 #### Geometry & Mesh

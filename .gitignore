@@ -76,3 +76,4 @@ BD-nsn_frag1d-runs/
 logs/
 .ruff_cache/
 opencode.json
+.serena/

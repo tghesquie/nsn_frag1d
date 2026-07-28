@@ -44,7 +44,7 @@ if [ ! -d "$PROJECT_ROOT/src" ] || [ ! -d "$PROJECT_ROOT/input" ]; then
     
     # Clean up temporary folder
     rm -rf repo_tmp
-    echo "--- Project files successfully placed in root ---"
+    echo "--- Project files successfully placed in root ---" 
 fi
 
 # ----------------------------------------------------------------------------
