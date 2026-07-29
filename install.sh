@@ -12,7 +12,7 @@ set -e
 # --- 1. Git Repositories and Pinned Commits ---
 # Fallback upstream repository (used only if src/ or input/ are missing)
 MY_GIT_URL="https://github.com/tghesquie/nsn_frag1d"
-MY_PROJECT_COMMIT="9b95b55"
+MY_PROJECT_COMMIT="v1.0.0"
 
 # The external C++ library dependency (Akantu)
 AKANTU_GIT_URL="https://gitlab.com/akantu/akantu.git"
