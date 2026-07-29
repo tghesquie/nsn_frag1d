@@ -10,20 +10,41 @@
 
 ---
 
-## Repository Layout  
+## Repository Layout
 
-| Path                       | Description                                                                 |
-| -------------------------- | --------------------------------------------------------------------------- |
-| `src/run_fragmentation.py` | Simulate 1D fragmentation, free or constrained expansion                    |
-| `src/run_impact.py`        | Simulate the impact of a pre-damaged bar on a wall                          |
-| `src/solver.py`            | Explicit predictor–corrector, nonsmooth contact (QP via OSQP), utilities    |
-| `src/helper.py`            | Time-step estimates, cohesive/contact helpers, I/O dumpers, BC utilities    |
-| `src/argparser.py`         | **CLI parser**, input/output roots, material/mesh paths, run-ID builder     |
-| `input/material/`          | Akantu material files (`*.dat`)                                             |
-| `input/mesh/`              | 1D meshes (`*.msh`), `generate_mesh.py` for automatic mesh generation       |
-| `output/`                  | Simulation outputs under `output/<RUN_ID>/`                                 |
-| `src/notebooks/`           | Example notebooks for inspecting results/fields                             |
-| `benchmarks/`              | Standalone analytical validation notebooks (`bouncing_ball`, `bar_impact`)  |
+```text
+.
+├── src/                              # Source code
+│   ├── run_fragmentation.py          # 1D fragmentation, free or constrained expansion
+│   ├── run_impact.py                 # Impact of a pre-damaged bar on a wall
+│   ├── solver.py                     # Explicit predictor–corrector, nonsmooth contact (QP via OSQP)
+│   ├── helper.py                     # Time-step estimates, cohesive/contact helpers, I/O dumpers
+│   ├── argparser.py                  # CLI parser, I/O roots, material/mesh paths, run-ID builder
+│   └── notebooks/                    # Example notebooks and plotting helpers
+│       ├── visualize.ipynb
+│       ├── query_db.py
+│       └── plots.py
+├── input/                            # Input files
+│   ├── material/
+│   │   └── material_linear_*.dat     # Akantu material files
+│   └── mesh/
+│       ├── generate_mesh.py          # Automatic 1D mesh generation
+│       └── bar_1D_*.msh              # Generated meshes
+├── output/                           # Simulation outputs (created at runtime)
+│   └── <RUN_ID>/
+│       ├── launch.sh                 # Auto-generated reproducibility launcher
+│       ├── input/                    # Archived material and mesh used by the run
+│       ├── data/
+│       │   └── data.h5               # Per-step scalar output
+│       └── paraview/                 # ParaView field files
+├── install.sh                        # Build/install script (Docker + local)
+├── env.sh                            # Environment activation helper
+├── reproduce.sh                      # Quick sanity-check simulation
+├── Dockerfile                        # Docker image definition
+├── THIRD_PARTY.md                    # Third-party attribution
+├── LICENSE                           # GPL-3.0 license
+└── README.md                         # This file
+```
 
 ---
 
@@ -163,9 +184,9 @@ The **mesh file name and path are derived from the CLI options** and auto-genera
 - **Controlled by**:
   - `--length`, `-l` (e.g. `0.01`) 
   - `--n-elements`, `-n` (e.g. `1000`) 
-  - `--mesh-density`, `-md` (Overrides `n-elements` if set to anything other than `1.0`) 
+  - `--mesh-density`, `-md` — target number of elements per meter. The effective number of elements is `int(length * mesh_density)` (overrides `--n-elements` if set to anything other than `1.0`).
   - `--mesh-element-order`, `-p` (1 or 2) 
-  - `--mesh-variation`, `-v` (Capped at `0.4` for P1 elements, and `0.2` for P2 elements)
+  - `--mesh-variation`, `-v` — random mesh variation fraction in `[0, 0.5)`. Each node is perturbed left/right by up to this fraction of the uniform element size, producing a non-uniform mesh (capped at `0.4` for P1 and `0.2` for P2).
 
 The base mesh filename follows this format: 
 ```
@@ -186,10 +207,14 @@ For reproducibility, random variations of cohesive strength and defects location
 ## Outputs
 
 - **Directory**: `output/<RUN_ID>/` (Defaults to `output/` in the project root if `--output-root` is not specified).
+- **HDF5**: `output/<RUN_ID>/data/data.h5` with per-step scalar data.
 - **ParaView**: `output/<RUN_ID>/paraview/`
-  - `tension_*` — bulk fields
-  - `cohesive_*` — cohesive fields
-- **HDF5**: `output/<RUN_ID>/data/data.h5` with per-step data.
+  - `tension.pvd` — bulk fields
+  - `cohesive.pvd` — cohesive fields
+- **Inputs (archival copy)**: `output/<RUN_ID>/input/`
+  - `material/material_linear_*.dat` — material file used by the run
+  - `mesh/bar_1D_*.msh` — mesh file used by the run
+- **Launcher**: `output/<RUN_ID>/launch.sh` — auto-generated script that reproduces the run from the run directory.
 
 #### Run ID Format
 
@@ -214,7 +239,7 @@ All arguments below are defined in `parse_simulation_args()`.
 | `--output-root`, `-o` | Base output directory | `output/` |
 | `--id`, `-id` | Custom run identifier (overrides auto-generated ID) | `None` |
 | `--study-name`, `-sn` | Optional study sub-folder inside output-root | `None` |
-| `--n-dumps`, `-d` | Number of output dumps during simulation | `200` |
+| `--n-dumps`, `-d` | Number of output dumps. Used directly by `run_impact.py`; ignored by `run_fragmentation.py`, which sets the dump frequency from the characteristic fragment transit time. | `200` |
 
 #### Geometry & Mesh
 
@@ -222,8 +247,8 @@ All arguments below are defined in `parse_simulation_args()`.
 | :--- | :--- | :--- |
 | `--length`, `-l` | Specimen length in meters | `0.01` |
 | `--n-elements`, `-n` | Number of finite elements | `1000` |
-| `--mesh-density`, `-md` | Mesh density multiplier (overrides n-elements if != 1.0) | `1.0` |
-| `--mesh-variation`, `-v` | Random mesh variation fraction in [0, 0.5) | `0.4` |
+| `--mesh-density`, `-md` | Mesh density in elements per meter (overrides `--n-elements` if != 1.0) | `1.0` |
+| `--mesh-variation`, `-v` | Random mesh variation fraction in [0, 0.5). Nodes are perturbed left/right by up to this fraction of the element size | `0.4` |
 | `--mesh-element-order`, `-p` | Mesh polynomial order (1=linear, 2=quadratic) | `1` |
 
 #### Time & Loading
@@ -232,7 +257,7 @@ All arguments below are defined in `parse_simulation_args()`.
 | :--- | :--- | :--- |
 | `--total-time`, `-t` | Total simulation time in seconds | `1e-6` |
 | `--safety-factor`, `-s` | CFL stability safety factor (0 < s ≤ 1) | `0.2` |
-| `--strain-rate-factor`, `-r` | Strain-rate multiplier for loading | `1.0` |
+| `--strain-rate-factor`, `-r` | Multiplier applied to the material characteristic strain rate $\dot\varepsilon_0 = \sigma_c / (E t_0)$, with $t_0 = E G_c / (\sigma_c^2 c)$ the characteristic material time and $c$ the longitudinal wave speed | `1.0` |
 | `--impact-velocity`, `-iv` | Initial impact velocity (for run_impact.py) | `None` |
 
 #### Contact & Cohesive Parameters
@@ -240,7 +265,7 @@ All arguments below are defined in `parse_simulation_args()`.
 | Flags | Description | Default |
 | :--- | :--- | :--- |
 | `--contact-type`, `-c` | Contact formulation type: penalty or nonsmooth | `penalty` |
-| `--contact-factor`, `-con` | Contact penalty factor α: k_con = α × (E/h) | `10.0` |
+| `--contact-factor`, `-con` | Contact penalty factor α: $\epsilon_N = \alpha (E/h)$, where $E/h$ is the characteristic finite-element stiffness | `10.0` |
 | `--cohesive-factor`, `-coh` | Cohesive stiffness factor: 0=auto, inf=off, >0=specific | `inf` |
 | `--restitution`, `-e` | Coefficient of restitution (nonsmooth mode, 0 ≤ e ≤ 1) | `1.0` |
 
@@ -248,12 +273,12 @@ All arguments below are defined in `parse_simulation_args()`.
 
 | Flags | Description | Default |
 | :--- | :--- | :--- |
-| `--defects-density`, `-dd` | Density of initial defects per unit length | `0.0` |
+| `--defects-density`, `-dd` | Density of initial defects per unit length; each defect lowers the cohesive strength $\sigma_c$ at the nearest cohesive facet | `0.0` |
 | `--seed` | Random seed for strength distribution and mesh variation | `1` |
 | `--apply-bc`, `-b` | Apply displacement boundary conditions at edges | `False` |
 | `--box` | Constrain fragment motion within a bounding box | `False` |
 | `--box-size-factor`, `-bf` | Box size factor relative to critical deformation | `2.0` |
-| `--cohesive-insertion-ratio`, `-cir` | Fraction of potential cohesive elements to insert | `0.2` |
+| `--cohesive-insertion-ratio`, `-cir` | Fraction of potential cohesive elements to insert; used only in `run_impact.py` for the damaged-bar impact simulation | `0.2` |
 
 ---
 
@@ -263,15 +288,21 @@ Simulation outputs are written to the host disk via Docker volume mounts, so you
 
 #### Option A: ParaView (Field Visualization, No Extra Setup)
 
-Open the ParaView files directly on your host machine:
+Open a `.pvd` file in ParaView, for example the bulk-field collection:
 
 ```bash
-paraview output/<RUN_ID>/paraview/
+paraview output/<RUN_ID>/paraview/tension.pvd
 ```
 
-- **Bulk fields**: `displacement`, `velocity`, `stress`, `grad_u`
+A typical visualization workflow is:
 
-*(If `paraview` is not installed, download it from [paraview.org](https://www.paraview.org/download/)).*
+1. Click **Apply** in the Pipeline Browser to load the time series.
+2. Change the representation from **Surface** to **Wireframe**.
+3. Optionally increase the line width for better visibility.
+4. Optionally add a **Warp By Vector** filter and use the `displacement` field to show the deformed geometry.
+5. Select the field to visualize (e.g. `displacement`, `velocity`, `stress`, `grad_u`) from the coloring dropdown.
+
+Use `cohesive.pvd` for cohesive-element fields. *(If ParaView is not installed, download it from [paraview.org](https://www.paraview.org/download/)).*
 
 ---
 
