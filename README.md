@@ -90,12 +90,6 @@ If you prefer a native installation, `install.sh` handles everything automatical
 
     Ensure it is executable via `chmod +x test_installation.sh`. This executes a lightweight 100-element fragmentation simulation (`test_reproduce`). If it completes without errors and creates files under `output/test_reproduce/`, the installation is functional.
 
-> **Reproducing the paper studies:** The curated data package contains one `launch.sh` per run. To reproduce a single run, go into the run directory and execute the launcher, for example:
-> ```bash
-> cd data/impact_study/nsnfrag1d_<run_id>
-> ./launch.sh
-> ```
-
 ---
 
 ## Running Simulations
