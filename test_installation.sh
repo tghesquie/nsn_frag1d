@@ -6,7 +6,7 @@ PROJECT_ROOT="$(cd "$(dirname "$0")" && pwd)"
 echo "--- Loading Environment ---"
 source "$PROJECT_ROOT/env.sh"
 
-echo "--- Running Quick Sanity-Check Simulation ---"
+echo "--- Running Quick Installation Test Simulation ---"
 python "$PROJECT_ROOT/src/run_fragmentation.py" \
     --id test_reproduce \
     --contact-type nonsmooth \
@@ -17,7 +17,7 @@ python "$PROJECT_ROOT/src/run_fragmentation.py" \
     --safety-factor 0.99 \
     --apply-bc
 
-echo "--- Test Run Complete ---"
+echo "--- Installation Test Complete ---"
 echo "To inspect results:"
 echo "  paraview $PROJECT_ROOT/output/test_reproduce/paraview/tension.pvd"
 

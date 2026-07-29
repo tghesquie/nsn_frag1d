@@ -39,7 +39,7 @@
 │       └── paraview/                 # ParaView field files
 ├── install.sh                        # Build/install script (Docker + local)
 ├── env.sh                            # Environment activation helper
-├── reproduce.sh                      # Quick sanity-check simulation
+├── test_installation.sh              # Quick installation test simulation
 ├── Dockerfile                        # Docker image definition
 ├── THIRD_PARTY.md                    # Third-party attribution
 ├── LICENSE                           # GPL-3.0 license
@@ -82,13 +82,19 @@ If you prefer a native installation, `install.sh` handles everything automatical
 
     This activates the Python virtual environment (`.venv`) and sources the Akantu build environment automatically.
 
-4. **Verify the Installation:** To check that everything is working, run the quick sanity-check script:
+4. **Verify the Installation:** To check that everything is working, run the quick installation-test script:
 
     ```bash
-    ./reproduce.sh
+    ./test_installation.sh
     ```
 
-    Ensure it is executable via `chmod +x reproduce.sh`. This executes a lightweight 100-element fragmentation simulation (`test_reproduce`). If it completes without errors and creates files under `output/test_reproduce/`, the installation is functional.
+    Ensure it is executable via `chmod +x test_installation.sh`. This executes a lightweight 100-element fragmentation simulation (`test_reproduce`). If it completes without errors and creates files under `output/test_reproduce/`, the installation is functional.
+
+> **Reproducing the paper studies:** The curated data package contains one `launch.sh` per run. To reproduce a single run, go into the run directory and execute the launcher, for example:
+> ```bash
+> cd data/impact_study/nsnfrag1d_<run_id>
+> ./launch.sh
+> ```
 
 ---
 
