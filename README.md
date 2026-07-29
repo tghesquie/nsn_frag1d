@@ -58,9 +58,11 @@ To ensure strict reproducibility, the project is containerized using Docker. The
 
 1. **Build the Docker Image:** From the root of this repository, run:
     ```bash
-    docker build -t explicit-nsn:latest .
+    docker build --network=host -t explicit-nsn:latest .
     ```
-    *(Note: This step takes a few minutes as it compiles the Akantu C++ engine from source. Ensure your `.dockerignore` file is present to prevent uploading large local output folders to the build context).
+    *(Note: This step takes a few minutes as it compiles the Akantu C++ engine from source. Ensure your `.dockerignore` file is present to prevent uploading large local output folders to the build context).*
+
+    > **Network note:** `--network=host` lets the build container use the host network stack to reach Debian/GitHub/GitLab mirrors. Some environments block Docker's default bridge network, which causes `apt-get` and `git clone` to time out. If you are on a system where host networking is not allowed, pre-install the dependencies in a base image and run `install.sh` with `SKIP_SYSTEM_DEPS=true`.
 
 #### Option B: Local Manual Setup
 
