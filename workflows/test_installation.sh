@@ -1,10 +1,10 @@
 #!/bin/bash
 set -e
 
-PROJECT_ROOT="$(cd "$(dirname "$0")" && pwd)"
+PROJECT_ROOT="$(cd "$(dirname "$0")/.." && pwd)"
 
 echo "--- Loading Environment ---"
-source "$PROJECT_ROOT/env.sh"
+source "$PROJECT_ROOT/workflows/env.sh"
 
 echo "--- Running Quick Installation Test Simulation ---"
 python "$PROJECT_ROOT/src/run_fragmentation.py" \

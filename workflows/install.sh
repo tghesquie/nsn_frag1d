@@ -12,7 +12,7 @@ set -e
 # --- 1. Git Repositories and Pinned Commits ---
 # Fallback upstream repository (used only if src/ or input/ are missing)
 MY_GIT_URL="https://github.com/tghesquie/nsn_frag1d"
-MY_PROJECT_COMMIT="v1.0.5"
+MY_PROJECT_COMMIT="v1.0.6"
 
 # The external C++ library dependency (Akantu)
 AKANTU_GIT_URL="https://gitlab.com/akantu/akantu.git"
@@ -181,10 +181,10 @@ fi
 
 echo "--- Installation Complete ---"
 echo "To activate the environment for this terminal session, run:"
-echo "  source env.sh"
+echo "  source workflows/env.sh"
 echo ""
 if [ "${SKIP_AKANTU}" != "true" ] && [ "${SKIP_AKANTU}" != "1" ]; then
-    echo "To verify the installation, run: ./test_installation.sh"
+    echo "To verify the installation, run: ./workflows/test_installation.sh"
 else
     echo "Akantu was skipped. You can now launch the notebooks using:"
     echo "  jupyter lab notebooks/"

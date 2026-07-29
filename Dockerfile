@@ -10,8 +10,8 @@ COPY --from=ghcr.io/astral-sh/uv:0.4.30 /uv /bin/uv
 
 WORKDIR /app
 COPY . .
-RUN bash install.sh
+RUN bash workflows/install.sh
 
-ENTRYPOINT ["/bin/bash", "-c", "source /app/env.sh && exec \"$@\"", "--"]
+ENTRYPOINT ["/bin/bash", "-c", "source /app/workflows/env.sh && exec \"$@\"", "--"]
 
 CMD ["python", "src/run_fragmentation.py", "--help"]

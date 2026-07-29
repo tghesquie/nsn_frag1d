@@ -1,13 +1,14 @@
 #!/usr/bin/env bash
-# env.sh — source in your current shell:  source env.sh
+# env.sh — source in your current shell:  source workflows/env.sh
 
 # Detect script directory (works in bash/zsh)
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]:-$0}")" && pwd)"
+PROJECT_ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
 
 # --- Virtual environment ---
-if [ -f "${SCRIPT_DIR}/.venv/bin/activate" ]; then
+if [ -f "${PROJECT_ROOT}/.venv/bin/activate" ]; then
   # shellcheck disable=SC1091
-  . "${SCRIPT_DIR}/.venv/bin/activate"
+  . "${PROJECT_ROOT}/.venv/bin/activate"
 else
   echo ".venv not found. Create it first with:" >&2
   echo "   python -m venv .venv" >&2
@@ -16,7 +17,7 @@ fi
 
 # --- Akantu environment (optional for notebook-only usage) ---
 # Allow override via AKANTU_ENV
-AKANTU_ENV="${AKANTU_ENV:-${SCRIPT_DIR}/external/akantu/build/akantu_environement.sh}"
+AKANTU_ENV="${AKANTU_ENV:-${PROJECT_ROOT}/external/akantu/build/akantu_environement.sh}"
 
 if [ "${SKIP_AKANTU}" = "1" ] || [ "${SKIP_AKANTU}" = "true" ]; then
   echo "SKIP_AKANTU is set — skipping Akantu environment."

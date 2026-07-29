@@ -37,9 +37,10 @@
 │       ├── data/
 │       │   └── data.h5               # Per-step scalar output
 │       └── paraview/                 # ParaView field files
-├── install.sh                        # Build/install script (Docker + local)
-├── env.sh                            # Environment activation helper
-├── test_installation.sh              # Quick installation test simulation
+├── workflows/                        # Setup and execution scripts
+│   ├── install.sh                    # Build/install script (Docker + local)
+│   ├── env.sh                        # Environment activation helper
+│   └── test_installation.sh          # Quick installation test simulation
 ├── Dockerfile                        # Docker image definition
 ├── THIRD_PARTY.md                    # Third-party attribution
 ├── LICENSE                           # GPL-3.0 license
@@ -50,11 +51,11 @@
 
 ## Environment Setup
 
-The build logic is centralized in **`install.sh`**. It is used both by the Docker build and for local installations, ensuring the same Akantu commit and CMake flags are always applied.
+The build logic is centralized in **`workflows/install.sh`**. It is used both by the Docker build and for local installations, ensuring the same Akantu commit and CMake flags are always applied.
 
 #### Option A: Docker (Recommended)
 
-To ensure strict reproducibility, the project is containerized using Docker. The Dockerfile delegates the entire build process to `install.sh`, which installs system libraries, pins the exact Akantu commit (`22adc1e`), compiles the C++ engine, and creates the Python environment via `uv`.
+To ensure strict reproducibility, the project is containerized using Docker. The Dockerfile delegates the entire build process to `workflows/install.sh`, which installs system libraries, pins the exact Akantu commit (`22adc1e`), compiles the C++ engine, and creates the Python environment via `uv`.
 
 1. **Build the Docker Image:** From the root of this repository, run:
     ```bash
@@ -62,22 +63,22 @@ To ensure strict reproducibility, the project is containerized using Docker. The
     ```
     *(Note: This step takes a few minutes as it compiles the Akantu C++ engine from source. Ensure your `.dockerignore` file is present to prevent uploading large local output folders to the build context).*
 
-    > **Network note:** `--network=host` lets the build container use the host network stack to reach Debian/GitHub/GitLab mirrors. Some environments block Docker's default bridge network, which causes `apt-get` and `git clone` to time out. If you are on a system where host networking is not allowed, pre-install the dependencies in a base image and run `install.sh` with `SKIP_SYSTEM_DEPS=true`.
+    > **Network note:** `--network=host` lets the build container use the host network stack to reach Debian/GitHub/GitLab mirrors. Some environments block Docker's default bridge network, which causes `apt-get` and `git clone` to time out. If you are on a system where host networking is not allowed, pre-install the dependencies in a base image and run `workflows/install.sh` with `SKIP_SYSTEM_DEPS=true`.
 
 #### Option B: Local Manual Setup
 
-If you prefer a native installation, `install.sh` handles everything automatically on Debian/Ubuntu-based systems.
+If you prefer a native installation, `workflows/install.sh` handles everything automatically on Debian/Ubuntu-based systems.
 
 1. **Prerequisites:** You need Python ≥ 3.11 and a Debian/Ubuntu-based system with `apt-get`.
 
-2. **Run the Install Script:** Execute `./install.sh` from the repository root (ensure it is executable via `chmod +x install.sh`). It automatically installs the system libraries listed in `pkg.txt` (such as `build-essential`, `cmake`, `git`, `gfortran`, `gmsh`, `libboost-dev`, `libeigen3-dev`, `libmumps-seq-dev`, `libblas-dev`, `liblapack-dev`), clones Akantu (commit `22adc1e`), compiles the C++ engine, creates a virtual environment, and installs the package in editable mode.
+2. **Run the Install Script:** Execute `./workflows/install.sh` from the repository root (ensure it is executable via `chmod +x workflows/install.sh`). It automatically installs the system libraries listed in `pkg.txt` (such as `build-essential`, `cmake`, `git`, `gfortran`, `gmsh`, `libboost-dev`, `libeigen3-dev`, `libmumps-seq-dev`, `libblas-dev`, `liblapack-dev`), clones Akantu (commit `22adc1e`), compiles the C++ engine, creates a virtual environment, and installs the package in editable mode.
 
-   > **Note:** If you are not on a Debian-based system, `install.sh` will print the required packages and skip the system installation so you can install their equivalents manually. You can also set the environment variable `SKIP_SYSTEM_DEPS=1` to skip the system package step entirely (e.g., in CI environments where dependencies are pre-installed).
+   > **Note:** If you are not on a Debian-based system, `workflows/install.sh` will print the required packages and skip the system installation so you can install their equivalents manually. You can also set the environment variable `SKIP_SYSTEM_DEPS=1` to skip the system package step entirely (e.g., in CI environments where dependencies are pre-installed).
 
 3. **Activate the Environment:** Every time you open a new terminal, load the environment with a single command:
 
     ```bash
-    source env.sh
+    source workflows/env.sh
     ```
 
     This activates the Python virtual environment (`.venv`) and sources the Akantu build environment automatically.
@@ -85,10 +86,10 @@ If you prefer a native installation, `install.sh` handles everything automatical
 4. **Verify the Installation:** To check that everything is working, run the quick installation-test script:
 
     ```bash
-    ./test_installation.sh
+    ./workflows/test_installation.sh
     ```
 
-    Ensure it is executable via `chmod +x test_installation.sh`. This executes a lightweight 100-element fragmentation simulation (`test_reproduce`). If it completes without errors and creates files under `output/test_reproduce/`, the installation is functional.
+    Ensure it is executable via `chmod +x workflows/test_installation.sh`. This executes a lightweight 100-element fragmentation simulation (`test_reproduce`). If it completes without errors and creates files under `output/test_reproduce/`, the installation is functional.
 
 ---
 
