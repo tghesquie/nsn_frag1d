@@ -40,6 +40,7 @@ def run(args: argparse.Namespace) -> None:
     # Delayed import to ensure AKA_SEED is set before Akantu initializes its random number generator
     import akantu as aka
     from helper import (
+        archive_inputs_and_write_launcher,
         check_active_contacts,
         cohesive_update,
         dump_step_h5,
@@ -140,6 +141,9 @@ def run(args: argparse.Namespace) -> None:
     h5_path = os.path.join(h5_dir, "data.h5")
     with h5py.File(h5_path, "w", libver="latest"):
         pass
+
+    # Archive inputs and write a reproducibility launcher
+    archive_inputs_and_write_launcher(args, output_dir, __file__)
 
     # --- Model Initialization ---
 

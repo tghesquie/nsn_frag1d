@@ -1,8 +1,12 @@
 # Copyright (c) 2026 EPFL
 # SPDX-License-Identifier: GPL-3.0-or-later
 
+import argparse
+import math
+import shutil
 import time
-from typing import Optional, Tuple
+from pathlib import Path
+from typing import Any, Optional, Tuple
 
 import akantu as aka
 import h5py
@@ -945,6 +949,122 @@ def compute_total_energy(
     emech = epot + ekin + erev + econ
     total_energy = emech + edis + contact_dissipation
     return total_energy
+
+
+def _reconstruct_command(args: argparse.Namespace) -> list[str]:
+    """
+    Rebuild a deterministic CLI command from a parsed argument namespace.
+
+    The returned list excludes the original ``--output-root`` and
+    ``--study-name`` because the generated launcher is meant to be executed
+    from inside the run directory with ``--output-root .``.
+    """
+    parts: list[str] = ["--output-root ."]
+    if args.id:
+        parts.append(f"--id {args.id}")
+
+    parts.extend(
+        [
+            f"--length {args.length}",
+            f"--n-elements {int(args.n_elements)}",
+            f"--mesh-density {args.mesh_density}",
+            f"--mesh-element-order {args.mesh_element_order}",
+            f"--mesh-variation {args.mesh_variation}",
+            f"--total-time {args.total_time}",
+            f"--safety-factor {args.safety_factor}",
+            f"--strain-rate-factor {args.strain_rate_factor}",
+            f"--n-dumps {args.n_dumps}",
+            f"--contact-type {args.contact_type}",
+            f"--defects-density {args.defects_density}",
+            f"--seed {args.seed}",
+        ]
+    )
+
+    if args.contact_type == "penalty":
+        parts.extend(
+            [
+                f"--contact-factor {args.contact_factor}",
+                "--restitution 1.0",
+                "--cohesive-factor inf",
+            ]
+        )
+    else:  # nonsmooth
+        parts.append(f"--restitution {args.restitution}")
+        if args.cohesive_factor == 0:
+            parts.append("--cohesive-factor 0.0")
+        elif not math.isinf(args.cohesive_factor):
+            parts.append(f"--cohesive-factor {args.cohesive_factor}")
+        else:
+            parts.append("--cohesive-factor inf")
+
+    parts.append(f"--cohesive-insertion-ratio {args.cohesive_insertion_ratio}")
+
+    if getattr(args, "impact_velocity", None) is not None:
+        parts.append(f"--impact-velocity {args.impact_velocity}")
+
+    if args.apply_bc:
+        parts.append("--apply-bc")
+    if args.box:
+        parts.extend(["--box", f"--box-size-factor {args.box_size_factor}"])
+
+    return parts
+
+
+def archive_inputs_and_write_launcher(
+    args: argparse.Namespace,
+    output_dir: str | Path,
+    script_path: str | Path,
+) -> None:
+    """
+    Archive the input material and mesh files and write a ``launch.sh``.
+
+    Parameters
+    ----------
+    args : argparse.Namespace
+        Parsed simulation arguments.
+    output_dir : str | Path
+        Run output directory (e.g. ``output/<RUN_ID>/``).
+    script_path : str | Path
+        Absolute or relative path to the driver script
+        (``run_fragmentation.py`` or ``run_impact.py``).
+
+    Notes
+    -----
+    Creates ``output_dir/input/material/`` and ``output_dir/input/mesh/``
+    with copies of the material and mesh files used by the run, plus a
+    ``launch.sh`` that reproduces the exact command from the run directory.
+    """
+    output_dir = Path(output_dir)
+    input_root = output_dir / "input"
+
+    material_src = Path(args.material_file)
+    mesh_src = Path(args.mesh_file)
+
+    material_dst = input_root / "material" / material_src.name
+    mesh_dst = input_root / "mesh" / mesh_src.name
+    material_dst.parent.mkdir(parents=True, exist_ok=True)
+    mesh_dst.parent.mkdir(parents=True, exist_ok=True)
+    shutil.copy2(material_src, material_dst)
+    shutil.copy2(mesh_src, mesh_dst)
+
+    script_path = Path(script_path).resolve()
+    cmd_line = " \\\n    ".join(_reconstruct_command(args))
+
+    launcher = (
+        "#!/bin/bash\n"
+        "\n"
+        "# Auto-generated reproducibility launcher\n"
+        "# Execute from the directory containing this script.\n"
+        "\n"
+        'cd "$(dirname "${BASH_SOURCE[0]}")"\n'
+        "\n"
+        f'python3 "{script_path}" \\\n'
+        f"    {cmd_line}\n"
+    )
+
+    launch_path = output_dir / "launch.sh"
+    launch_path.write_text(launcher)
+    launch_path.chmod(0o755)
 
 
 def _compute_energies(
