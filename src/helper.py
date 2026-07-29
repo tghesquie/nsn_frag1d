@@ -955,11 +955,13 @@ def _reconstruct_command(args: argparse.Namespace) -> list[str]:
     """
     Rebuild a deterministic CLI command from a parsed argument namespace.
 
-    The returned list excludes the original ``--output-root`` and
-    ``--study-name`` because the generated launcher is meant to be executed
-    from inside the run directory with ``--output-root .``.
+    The generated launcher is meant to be executed from inside the run
+    directory, so the output root is fixed to ``.``. The original study name
+    is preserved so that the launcher remains self-documenting.
     """
     parts: list[str] = ["--output-root ."]
+    if getattr(args, "study_name", None):
+        parts.append(f"--study-name {args.study_name}")
     if args.id:
         parts.append(f"--id {args.id}")
 

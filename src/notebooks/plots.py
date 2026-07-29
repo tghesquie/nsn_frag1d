@@ -42,21 +42,21 @@ _COLORS.append("grey")
 _FILLCOLORS = [c.replace("rgb(", "rgba(").replace(")", ",0.7)") for c in _COLORS]
 
 _ENERGY_LABELS = {
-    "kinetic_energy": r"$\Delta\mathcal{K}$",
-    "potential_energy": r"$\Delta\mathcal{U}$",
-    "reversible_energy": r"$\Delta\mathcal{R}$",
-    "contact_energy": r"$\Delta\mathcal{C}_{\rm rev}$",
-    "dissipated_energy": r"$\Delta\mathcal{G}$",
-    "contact_dissipation": r"$\Delta\mathcal{C}_{\rm dis}$",
+    "kinetic_energy": "ΔK",
+    "potential_energy": "ΔU",
+    "reversible_energy": "ΔR",
+    "contact_energy": "ΔC_rev",
+    "dissipated_energy": "ΔG",
+    "contact_dissipation": "ΔC_dis",
 }
 
 _STACKED_LABELS = {
-    "kinetic_energy": r"$\mathcal{K}$",
-    "potential_energy": r"$\mathcal{U}$",
-    "reversible_energy": r"$\mathcal{R}$",
-    "contact_energy": r"$\mathcal{C}_{\rm rev}$",
-    "dissipated_energy": r"$\mathcal{G}$",
-    "contact_dissipation": r"$\mathcal{C}_{\rm dis}$",
+    "kinetic_energy": "K",
+    "potential_energy": "U",
+    "reversible_energy": "R",
+    "contact_energy": "C_rev",
+    "dissipated_energy": "G",
+    "contact_dissipation": "C_dis",
 }
 
 
@@ -250,7 +250,7 @@ def plot_energy_balance(
             y=df["algorithmic_energy_balance"]
             - df["algorithmic_energy_balance"].iloc[0],
             mode="lines",
-            name=r"$\Delta\mathcal{E}^{\rm alg}$",
+            name="ΔE_alg",
             line=dict(color="black"),
         )
     )
@@ -259,7 +259,7 @@ def plot_energy_balance(
             x=df["time"],
             y=df["mechanical_energy_balance"] - df["mechanical_energy_balance"].iloc[0],
             mode="lines",
-            name=r"$\Delta\mathcal{E}^{\rm mech}$",
+            name="ΔE_mech",
             line=dict(color="red"),
         )
     )
@@ -268,7 +268,7 @@ def plot_energy_balance(
         fig,
         title="Energy balance vs. Time",
         xaxis_title="Time (s)",
-        yaxis_title=r"$\Delta\mathcal{E}$ (J)",
+        yaxis_title="ΔE (J)",
         legend_y=0.97,
     )
 
@@ -313,7 +313,7 @@ def plot_energies(
             x=df["time"],
             y=-(df["external_work"] - df["external_work"].iloc[0]),
             mode="lines",
-            name=r"$\mathcal{W}^{\rm ext}$",
+            name="W_ext",
             line=dict(color="red"),
         )
     )
@@ -322,7 +322,7 @@ def plot_energies(
             x=df["time"],
             y=df["mechanical_energy_balance"] - df["mechanical_energy_balance"].iloc[0],
             mode="lines",
-            name=r"$\Delta\mathcal{E}^{\rm mech}$",
+            name="ΔE_mech",
             line=dict(color="black"),
         )
     )
@@ -331,7 +331,7 @@ def plot_energies(
         fig,
         title="Energy variation vs. Time",
         xaxis_title="Time (s)",
-        yaxis_title=r"$\Delta\mathcal{E}$ (J)",
+        yaxis_title="ΔE (J)",
         legend_y=1.2,
     )
 
@@ -393,7 +393,7 @@ def plot_energies_stack(
             x=df["time"],
             y=einj,
             mode="lines",
-            name=r"$\mathcal{W}^{\rm ext} + \mathcal{E}_0$",
+            name="W_ext + E0",
             line=dict(color="red", width=2),
         )
     )
@@ -402,7 +402,7 @@ def plot_energies_stack(
         fig,
         title="Stacked Energy vs. Time",
         xaxis_title="Time (s)",
-        yaxis_title=r"$\mathcal{E}$ (J)",
+        yaxis_title="E (J)",
         legend_y=0.9,
     )
 

@@ -302,8 +302,11 @@ def _resolve_paths(args: argparse.Namespace) -> argparse.Namespace:
     else:
         args.output_root = project_root / "output"
 
-    # Optional study sub-folder (does not affect the run ID)
-    if args.study_name:
+    # Optional study sub-folder. When the output root is the literal current
+    # directory ("."), the study name is recorded for the launcher but is not
+    # appended to the path so that in-place reproduction from inside a run
+    # directory keeps writing into that same directory.
+    if args.study_name and str(args.output_root) != ".":
         args.output_root = args.output_root / args.study_name
 
     args.output_root.mkdir(parents=True, exist_ok=True)
