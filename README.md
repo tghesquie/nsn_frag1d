@@ -8,12 +8,6 @@
   * **Nonsmooth contact** (QP solved with **OSQP**) from `solver.py`
 * Outputs: **ParaView** files and **HDF5** for post-processing.
 
-## Associated dataset
-
-The parametric-study dataset that accompanies this software is published separately on Zenodo (DOI placeholder: `10.5281/zenodo.XXXXXXX`). The dataset package fetches this code repository at the pinned tag `v1.0.0` via `workflows/install.sh` and contains the simulation outputs, analysis notebooks, and per-run reproducibility launchers.
-
----
-
 ## Repository Layout
 
 ```text
