@@ -184,10 +184,14 @@ def load_run(path_or_row: str | Path | pd.Series) -> dict[str, Any]:
 
     with h5py.File(path, "r") as f:
         quad_coords = (
-            f["quad_coordinates"][()].flatten() if "quad_coordinates" in f else None
+            np.asarray(f["quad_coordinates"][()]).flatten()
+            if "quad_coordinates" in f
+            else None
         )
         nodes_coords = (
-            f["nodes_coordinates"][()].flatten() if "nodes_coordinates" in f else None
+            np.asarray(f["nodes_coordinates"][()]).flatten()
+            if "nodes_coordinates" in f
+            else None
         )
 
         for name, item in f.items():
