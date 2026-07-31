@@ -1,6 +1,6 @@
 [project]
 name = "ns-frag1d"
-version = "0.1.0"
+version = "1.0.0"
 description = "1D Cohesive Fracture and Contact (Akantu)"
 authors = [
 	{ name = "Thibault Ghequière-Diérickx", email = "thibault.ghesquiere-dierickx@epfl.ch" },
